@@ -1,0 +1,24 @@
+; dashcam-geodb configuration
+; Change these and run ./configure.sh from a host with PHP installed before
+; starting the docker containers
+
+[database]
+
+; Select database login credentials, these values will be transferred to the
+; PostGreSQL container upon startup (remember to run the ./configure.sh script)
+
+POSTGRES_USER       = john
+POSTGRES_PASSWORD   = secet
+POSTGRES_DB         = dashcam
+
+[paths]
+
+; Path to directory where the video files are located
+
+DIR_MP4             = /path/to/mp4/files
+
+; The GML source for places in Norway. Download this file from
+; https://kartkatalog.geonorge.no/metadata/stedsnavn/30caed2f-454e-44be-b5cc-26bb5c0110ca
+; and copy it into the /data directory.
+
+GML_SRC             = Basisdata_0000_Norge_25833_Stedsnavn_GML.gml
