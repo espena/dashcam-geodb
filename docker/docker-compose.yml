@@ -1,0 +1,22 @@
+version: '3'
+services:
+
+  php:
+    image: espena/php
+    build:
+      context: ./images/php
+    volumes:
+      - ../:/srv:rw
+    container_name: dcm-php
+
+  postgis:
+    image: espena/postgis
+    build:
+      context: ./images/postgis
+    volumes:
+      - ../:/srv:rw
+      - ./postgres:/var/lib/postgres:rw
+    container_name: dcm-postgis
+    environment:
+      - POSTGRES_USER=espena
+      - POSTGRES_PASSWORD=cicero
