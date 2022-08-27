@@ -1,3 +1,5 @@
 .DS_Store
-docker/docker-volumes/*
-!docker/docker-volumes/.gitkeep
+data/*
+!data/.gitkeep
+docker/postgres/*
+!docker/postgres/.gitkeep
