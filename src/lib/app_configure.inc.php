@@ -6,6 +6,7 @@
   require_once( DIR_LIB . '/gml_parser.inc.php' );
   require_once( DIR_LIB . '/unzipper.inc.php' );
   require_once( DIR_LIB . '/logger.inc.php' );
+  require_once( DIR_LIB . '/database_connection.inc.php' );
 
   class AppConfigure implements IApplication {
 
@@ -47,9 +48,13 @@
       $this->mIniParser->load( DIR_CFG . '/' . FILE_CONFIG );
       $this->parseGML();
       $placesList = $this->mGmlParser->getPlacesList();
-
-      // TODO Import places into PostGIS
-
+      $db = new DatabaseConnection(
+        $this->mIniParser->getValue( 'database', 'POSTGRES_USER' ) ?? 'john',
+        $this->mIniParser->getValue( 'database', 'POSTGRES_PASSWORD' ) ?? 'secret',
+        $this->mIniParser->getValue( 'database', 'POSTGRES_DB' ) ?? 'dashcam',
+        $this->mIniParser->getValue( 'database', 'POSTGRES_HOST' ) ?? 'localhost',
+        $this->mIniParser->getValue( 'database', 'POSTGRES_PORT' ) ?? 5432 );
+      $db->importPlaces( $placesList );
     }
   }
 
