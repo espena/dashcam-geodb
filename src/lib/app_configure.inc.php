@@ -4,6 +4,8 @@
   require_once( DIR_LIB . '/t_application.inc.php' );
   require_once( DIR_LIB . '/ini_parser.inc.php' );
   require_once( DIR_LIB . '/gml_parser.inc.php' );
+  require_once( DIR_LIB . '/unzipper.inc.php' );
+  require_once( DIR_LIB . '/logger.inc.php' );
 
   class AppConfigure implements IApplication {
 
@@ -21,10 +23,34 @@
       $this->mGmlParser = new GmlParser();
     }
 
-    public function run():void {
-      $this->defaultRun();
+    private function parseGML():void {
+      $unzipper = new Unzipper( DIR_DATA . '/*GML.zip' );
+      $gmlFiles = $unzipper->getFiles();
+      try {
+        foreach( $gmlFiles as $gmlFile ) {
+          if( pathinfo( $gmlFile, PATHINFO_EXTENSION ) == 'gml' &&
+              file_exists( $gmlFile ) ) {
+            $this->mGmlParser->load( $gmlFile );
+          }
+        }
+      }
+      catch( Exception $err ) {
+        Logger::out( $err );
+      }
+      finally {
+        $unzipper->deleteFiles();
+      }
     }
 
+    public function run():void {
+      $this->defaultRun();
+      $this->mIniParser->load( DIR_CFG . '/' . FILE_CONFIG );
+      $this->parseGML();
+      $placesList = $this->mGmlParser->getPlacesList();
+
+      // TODO Import places into PostGIS
+
+    }
   }
 
 ?>
