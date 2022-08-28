@@ -3,7 +3,7 @@ Creates geospatial PostGIS database from BlackVue dashcam videos. Work in progre
 
 ## How it works
 This application "translates" geographical metadata embedded in dashcam videos
-to named places and venues, and inserts these into the metadat section of the
+to named places and venues, and inserts these into the metadata section of the
 file. Thus, the video files can be made directly searchable by geographical
 names.
 
