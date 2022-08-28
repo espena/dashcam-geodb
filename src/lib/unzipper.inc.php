@@ -33,10 +33,12 @@
     }
 
     public function deleteFiles():void {
-      array_walk( $this->mFiles, fn( $s ) => unlink( $s ) );
-      $dirs = array_keys( array_flip( array_map( fn( $s ) => dirname( $s ), $this->mFiles ) ) );
-      array_walk( $dirs, fn( $s ) => rmdir( $s ) );
-      $this->mFiles = null;
+      if( $this->mFiles ) {
+        array_walk( $this->mFiles, fn( $s ) => unlink( $s ) );
+        $dirs = array_keys( array_flip( array_map( fn( $s ) => dirname( $s ), $this->mFiles ) ) );
+        array_walk( $dirs, fn( $s ) => rmdir( $s ) );
+        $this->mFiles = null;
+      }
     }
 
   }
