@@ -1,5 +1,5 @@
 .DS_Store
 data/*
-!data/.gitkeep
+!data/*.zip
 docker/postgres/*
 !docker/postgres/.gitkeep
