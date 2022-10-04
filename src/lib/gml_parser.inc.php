@@ -21,7 +21,7 @@
     }
 
     public function load( $filename ):void {
-      Logger::out( "Loading {$filename} (may take a couple of minutes)" );
+      Logger::out( "Loading {$filename} (may take a couple of minutes)\n" );
       $this->mDoc->load( $filename );
       $this->mXPath = new DOMXPath( $this->mDoc );
       $places = $this->mXPath->query( '/gml:FeatureCollection/gml:featureMember/app:Sted' );
