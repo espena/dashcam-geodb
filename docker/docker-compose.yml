@@ -15,9 +15,12 @@ services:
       context: ./images/postgis
     volumes:
       - ../:/srv:rw
-      - ./postgres:/var/lib/postgres:rw
+      - dcm_postgres:/var/lib/postgres:rw
     container_name: dcm-postgis
     environment:
       - POSTGRES_USER=john
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=dashcam
+
+volumes:
+  dcm_postgres:
