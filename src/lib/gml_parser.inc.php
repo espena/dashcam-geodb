@@ -27,12 +27,17 @@
       $places = $this->mXPath->query( '/gml:FeatureCollection/gml:featureMember/app:Sted' );
       $srid = $this->getSRID();
       $gml2postgis = [
-        'gml:Point'      => 'ST_Point(%s)',
-        'gml:LineString' => 'ST_LineString(%s)'
+        'gml:Point'      => 'Point(%s)',
+        'gml:LineString' => 'LineString(%s)'
       ];
+      /*
       $geomNodes = [
         './/gml:Point//gml:pos',
         './/gml:LineString//gml:posList'
+      ];
+      */
+      $geomNodes = [
+        './/gml:Point//gml:pos'
       ];
       foreach( $places as $place ) {
         $coords = $this->mXPath->query( implode( '|', $geomNodes ), $place );
@@ -40,13 +45,14 @@
         if( $coords->length > 0 && $names->length == 1 ) {
           foreach( $coords as $coord ) {
             $gmlType = $this->mXPath->query( '../.', $coord )->item( 0 )->nodeName;
-            $pgType = sprintf( $gml2postgis[ $gmlType ], $coord->nodeValue );
-            $this->mPlaces[ ] = [
-              $names->item( 0 )->nodeValue,
-              "ST_GeomFromText('{$pgType}',{$srid})"
-            ];
-          }
-        }
+            if( preg_match_all( '/[\d\.]+ [\d\.]+\s?+/', $coord->nodeValue, $m ) ) {
+              $coordList = implode( ', ', array_map( fn( $coord ) => trim( $coord ), $m[ 0 ] ) );
+              $feature = sprintf( $gml2postgis[ $gmlType ], $coordList );
+              $this->mPlaces[ ] = [
+                $names->item( 0 )->nodeValue,
+                $srid,
+                $feature
+              ]; } } }
       }
     }
 
