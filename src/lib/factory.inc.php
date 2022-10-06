@@ -3,6 +3,7 @@
   require_once( DIR_LIB . '/i_application.inc.php' );
   require_once( DIR_LIB . '/app_base.inc.php' );
   require_once( DIR_LIB . '/app_configure.inc.php' );
+  require_once( DIR_LIB . '/app_video_parser.inc.php' );
 
   class Factory {
 
@@ -14,6 +15,10 @@
         case 'configure.php':
           ini_set( 'memory_limit', -1 ); /* GML parsing is a memory hog */
           self::$mTheApp = new AppConfigure( self::$mTheApp );
+          break;
+        case 'parse.php':
+          ini_set( 'memory_limit', -1 ); /* GML parsing is a memory hog */
+          self::$mTheApp = new AppVideoParser( self::$mTheApp );
           break;
         default:
           ;
