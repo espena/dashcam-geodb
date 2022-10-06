@@ -1,4 +1,8 @@
 .DS_Store
+videofiles
+exiftool
+plex_databases
+plex_import
 data/*
 !data/*.zip
 docker/postgres/*
