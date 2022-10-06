@@ -7,6 +7,7 @@ services:
       context: ./images/php
     volumes:
       - ../:/srv:rw
+      - /Volumes/dashcam/Record:/videofiles:rw
     container_name: dcm-php
 
   postgis:
@@ -15,12 +16,11 @@ services:
       context: ./images/postgis
     volumes:
       - ../:/srv:rw
-      - dcm_postgres:/var/lib/postgres:rw
+      - dcm_pgsql_data:/var/lib/postgresql/data:rw
     container_name: dcm-postgis
     environment:
       - POSTGRES_USER=john
       - POSTGRES_PASSWORD=secret
       - POSTGRES_DB=dashcam
-
 volumes:
-  dcm_postgres:
+  dcm_pgsql_data:
