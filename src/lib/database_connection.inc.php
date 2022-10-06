@@ -12,6 +12,32 @@
       $this->mPdo = new PDO( $dsn, $user, $password, $pdoOpts );
     }
 
+    public function getPlacesFromCoords( $coords ):array {
+      $select = $this->mPdo->prepare( "SELECT DISTINCT name FROM place WHERE ST_Distance( ST_GeomFromText( :feature ,4326), pos ) < 500" );
+      $places = [ ];
+      $n = count( $coords );
+      Logger::out( "Parsing position 0 of {$n}     " );
+      for( $i = 0; $i < $n; $i += 10 ) {
+        if( $i >= $n ) break;
+        Logger::out( "\rParsing position {$i} of {$n}     " );
+        $coord = $coords[ $i ];
+        $select->execute( [ ':feature' => "POINT({$coord})" ] );
+        while( $row = $select->fetch( PDO::FETCH_ASSOC ) ) {
+          $places[ $row[ 'name' ] ] = $row[ 'name' ];
+        }
+      }
+      Logger::out( "\r{$n} positions checked     \n" );
+      return array_values( $places );
+    }
+
+    public function fileAlreadyProcessed( $title ):bool {
+      $n = $this->mPdo->query( "SELECT COUNT( id_log ) FROM log WHERE name = '{$title}'" )->fetchColumn();
+      if( $n == 0 ) {
+        $this->mPdo->query( "INSERT INTO log ( name ) VALUES ( '{$title}' )" );
+      }
+      return $n > 0;
+    }
+
     public function importPlaces( $placesList ):void {
       $insert = $this->mPdo->prepare( "INSERT INTO place ( name, pos ) VALUES ( :name, ST_Transform(ST_GeomFromText( :feature, :srid ), 4326 ) )" );
       $n = count( $placesList );
