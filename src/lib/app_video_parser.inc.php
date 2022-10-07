@@ -12,6 +12,7 @@
 
     private IApplication $mParent;
     private IniParser $mIniParser;
+    private DatabaseConnection $mDb;
 
     use TApplication {
       run as private defaultRun;
@@ -22,17 +23,26 @@
       $this->mIniParser = new IniParser();
     }
 
+    private function doPreOperations():void {
+      global $argv;
+      if( array_search( 'prune-history', $argv ) !== false ) {
+        $this->mDb->pruneHistory();
+      }
+    }
+
     public function run():void {
 
       $this->defaultRun();
       $this->mIniParser->load( DIR_CFG . '/' . FILE_CONFIG );
 
-      $db = new DatabaseConnection(
+      $this->mDb = new DatabaseConnection(
         $this->mIniParser->getValue( 'database', 'POSTGRES_USER' ) ?? 'john',
         $this->mIniParser->getValue( 'database', 'POSTGRES_PASSWORD' ) ?? 'secret',
         $this->mIniParser->getValue( 'database', 'POSTGRES_DB' ) ?? 'dashcam',
         $this->mIniParser->getValue( 'database', 'POSTGRES_HOST' ) ?? 'localhost',
         $this->mIniParser->getValue( 'database', 'POSTGRES_PORT' ) ?? 5432 );
+
+      $this->doPreOperations();
 
       $dirVideo = $this->mIniParser->getValue( 'video_parser', 'DIR_VIDEO' );
 
@@ -40,7 +50,7 @@
       $videofiles = glob( "{$dirVideo}/*.mp4" );
       foreach( $videofiles as $videofile ) {
         $title = pathinfo( $videofile, PATHINFO_FILENAME );
-        if( $db->fileAlreadyProcessed( $title ) ) {
+        if( $this->mDb->fileAlreadyProcessed( $title ) ) {
           continue;
         }
         $coords = [];
@@ -72,7 +82,7 @@
             $coords[ $key ] = [ $lon, $lat ];
           }
         }
-        $placesArr = $db->getPlacesFromCoords( array_values( $coords ) );
+        $placesArr = $this->mDb->getPlacesFromCoords( array_values( $coords ) );
         $placesStr = implode( ", ", $placesArr );
         if( count( $placesArr ) > 0 ) {
           file_put_contents( $plexImportFile, "UPDATE metadata_items SET summary = '{$placesStr}' WHERE title = '{$title}';\n", FILE_APPEND );

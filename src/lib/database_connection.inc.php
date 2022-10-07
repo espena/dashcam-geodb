@@ -12,6 +12,11 @@
       $this->mPdo = new PDO( $dsn, $user, $password, $pdoOpts );
     }
 
+    public function pruneHistory():void {
+      Logger::out( "Deleting history! All files in directory will be parsed\n" );
+      $this->mPdo->query( 'TRUNCATE TABLE log;' );
+    }
+
     public function getPlacesFromCoords( $coords ):array {
       $select = $this->mPdo->prepare( "SELECT DISTINCT name FROM place WHERE ST_Distance( ST_GeomFromText( :feature ,4326), pos ) < 500" );
       $places = [ ];
