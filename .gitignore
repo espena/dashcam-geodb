@@ -7,3 +7,4 @@ data/*
 !data/*.zip
 docker/postgres/*
 !docker/postgres/.gitkeep
+*.dump
