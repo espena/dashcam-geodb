@@ -114,6 +114,7 @@
         $placesArr = $this->mDb->getPlacesFromCoords( array_values( $coords ) );
         $placesStr = implode( ", ", $placesArr );
         if( count( $placesArr ) > 0 ) {
+          Logger::out( "Venues: {$placesStr}\n" );
           file_put_contents( $plexImportFile, "UPDATE metadata_items SET summary = '{$placesStr}' WHERE title = '{$title}';\n", FILE_APPEND );
           if( $this->mPlexQueryPruneOldTaggings ) {
             file_put_contents( $plexImportFile, "DELETE FROM taggings WHERE metadata_item_id = ( SELECT id FROM metadata_items WHERE title = '{$title}' );\n", FILE_APPEND );
