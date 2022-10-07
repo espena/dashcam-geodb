@@ -29,3 +29,10 @@ proximity to a named area will be registered.
 ## Run
 Enter the `dcm-php` container and cd to `/srv/main`. From there, run
 `./parse.sh` to start parsing the video files.
+
+Two command-line parameters are supported:
+
+- `prune-history` will process all files in the source directory. Normally,
+  only new files will be parsed.
+- `prune-plex-taggings` will remove any previous tags from each file before
+  adding new ones.
