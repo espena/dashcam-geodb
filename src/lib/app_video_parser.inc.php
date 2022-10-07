@@ -10,9 +10,23 @@
 
   class AppVideoParser implements IApplication {
 
+    const CMDARGS = [ // Command-line arguments
+
+      'prune-history' => [
+        'method' => 'cmdPruneParserHistory',
+        'description' => 'Deletes parser history. All files in source directory will be scanned.' ],
+
+      'prune-plex-taggings' => [
+        'method' => 'cmdPrunePlexTaggings',
+        'description' => 'Existing tags will be removed from each file before new tags are added.' ]
+
+    ];
+
     private IApplication $mParent;
     private IniParser $mIniParser;
     private DatabaseConnection $mDb;
+
+    private bool $mPlexQueryPruneOldTaggings = false;
 
     use TApplication {
       run as private defaultRun;
@@ -23,10 +37,22 @@
       $this->mIniParser = new IniParser();
     }
 
-    private function doPreOperations():void {
+    private function cmdPrunePlexTaggings():void {
+      Logger::out( "Existing tags will be removed from each file.\n" );
+      $this->mPlexQueryPruneOldTaggings = true;
+    }
+
+    private function cmdPruneParserHistory():void {
+      $this->mDb->pruneHistory();
+    }
+
+    private function doCmdOperations():void {
       global $argv;
-      if( array_search( 'prune-history', $argv ) !== false ) {
-        $this->mDb->pruneHistory();
+      foreach( $argv as $arg ) {
+        if( isset( self::CMDARGS[ $arg ] ) ) {
+          $method = self::CMDARGS[ $arg ][ 'method' ];
+          $this->$method();
+        }
       }
     }
 
@@ -42,17 +68,20 @@
         $this->mIniParser->getValue( 'database', 'POSTGRES_HOST' ) ?? 'localhost',
         $this->mIniParser->getValue( 'database', 'POSTGRES_PORT' ) ?? 5432 );
 
-      $this->doPreOperations();
+      $this->doCmdOperations();
 
       $dirVideo = $this->mIniParser->getValue( 'video_parser', 'DIR_VIDEO' );
 
       $plexImportFile = $this->mIniParser->getValue( 'video_parser', 'PLEX_IMPORT_FILE' );
       $videofiles = glob( "{$dirVideo}/*.mp4" );
-      foreach( $videofiles as $videofile ) {
+      $fileCount = count( $videofiles );
+      for( $progress = 1; $progress <= $fileCount; $progress++ ) {
+        $videofile = $videofiles[ $progress - 1 ];
         $title = pathinfo( $videofile, PATHINFO_FILENAME );
         if( $this->mDb->fileAlreadyProcessed( $title ) ) {
           continue;
         }
+        Logger::out( "Parsing file {$progress} of {$fileCount}: {$title}\n" );
         $coords = [];
         $track = `exiftool -ee -"gpslog" -b {$videofile}`;
         $raw = array_map( fn( $ln ) => explode( ',', $ln ), explode( "\n\n", $track ) );
@@ -86,6 +115,9 @@
         $placesStr = implode( ", ", $placesArr );
         if( count( $placesArr ) > 0 ) {
           file_put_contents( $plexImportFile, "UPDATE metadata_items SET summary = '{$placesStr}' WHERE title = '{$title}';\n", FILE_APPEND );
+          if( $this->mPlexQueryPruneOldTaggings ) {
+            file_put_contents( $plexImportFile, "DELETE FROM taggings WHERE metadata_item_id = ( SELECT id FROM metadata_items WHERE title = '{$title}' );\n", FILE_APPEND );
+          }
           $index = 0;
           $dict = [ ];
           foreach( $placesArr as $place ) {
