@@ -47,18 +47,29 @@
         $track = `exiftool -ee -"gpslog" -b {$videofile}`;
         $raw = array_map( fn( $ln ) => explode( ',', $ln ), explode( "\n\n", $track ) );
         foreach( $raw as $bin ) {
+
           for( $i = 0; $i < count( $bin ); $i++ ) {
             switch( $bin[ $i ] ) {
               case 'N':
-                $lat = floatval( $bin[ $i - 1 ] ?? 0 ) * 0.01;
+                $lat = [
+                  intval( substr( $bin[ $i - 1 ], 0, 2 ) ),
+                  intval( substr( $bin[ $i - 1 ], 2, 2 ) ),
+                  intval( substr( $bin[ $i - 1 ], 5, 5 ) )
+                ];
                 break;
+
               case 'E':
-                $lon = floatval( $bin[ $i - 1 ] ?? 0 ) * 0.01;
+                $lon = [
+                  intval( substr( $bin[ $i - 1 ], 0, 3 ) ),
+                  intval( substr( $bin[ $i - 1 ], 3, 2 ) ),
+                  intval( substr( $bin[ $i - 1 ], 6, 5 ) )
+                ];
                 break;
             }
           }
-          if( !empty( $lat ) && !empty( $lon ) ) {
-            $coords[ "{$lon} {$lat}" ] = "{$lon} {$lat}";
+          if( isset( $lat ) && $lat[ 0 ] > 0 && isset( $lon ) && $lon[ 0 ] > 0 ) {
+            $key = implode( '', $lon ) . implode( '', $lat );
+            $coords[ $key ] = [ $lon, $lat ];
           }
         }
         $placesArr = $db->getPlacesFromCoords( array_values( $coords ) );
