@@ -21,7 +21,9 @@
         if( $i >= $n ) break;
         Logger::out( "\rParsing position {$i} of {$n}     " );
         $coord = $coords[ $i ];
-        $select->execute( [ ':feature' => "POINT({$coord})" ] );
+        $lon = $coord[ 0 ][ 0 ] + ( $coord[ 0 ][ 1 ] / 60 ) + ( $coord[ 0 ][ 2 ] / 3600000 );
+        $lat = $coord[ 1 ][ 0 ] + ( $coord[ 1 ][ 1 ] / 60 ) + ( $coord[ 1 ][ 2 ] / 3600000 );
+        $select->execute( [ ':feature' => "POINT({$lon} {$lat})" ] );
         while( $row = $select->fetch( PDO::FETCH_ASSOC ) ) {
           $places[ $row[ 'name' ] ] = $row[ 'name' ];
         }
