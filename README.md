@@ -5,7 +5,8 @@ Work in progress.
 ## How it works
 This application tranforms geographical coordinates embedded in dashcam videos
 from BlackVue cameras to named venues, emitting a SQL file that can be run
-against Plex Media Server.
+against Plex Media Server. The geographical tags are stored as categories
+(genres) in the Plex database, as it will make the data searchable from the GUI.
 
 Works for Norwegian venues as of now.
 
